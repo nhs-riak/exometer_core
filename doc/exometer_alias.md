@@ -79,6 +79,19 @@ name() = <a href="exometer.md#type-name">exometer:name()</a>
 
 
 
+### <a name="type-re_mp">re_mp()</a> ###
+
+
+<pre><code>
+re_mp() = tuple()
+</code></pre>
+
+ The `mp()` type is not actually exported from the `re` module.
+It's a tuple of undefined length whose first element is the atom `re_pattern`.
+Refer to http://erlang.org/doc/man/re.html#type-mp
+
+
+
 ### <a name="type-reason">reason()</a> ###
 
 
@@ -93,7 +106,7 @@ reason() = any()
 
 
 <pre><code>
-regexp() = iodata() | <a href="re.md#type-mp">re:mp()</a>
+regexp() = iodata() | <a href="#type-re_mp">re_mp()</a>
 </code></pre>
 
 

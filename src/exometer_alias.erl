@@ -1,11 +1,10 @@
-%% -*- erlang-indent-level: 4;indent-tabs-mode: nil -*-
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
+%% Copyright (c) 2014-2017 Basho Technologies, Inc.
 %%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 %% -------------------------------------------------------------------
 
@@ -51,10 +50,15 @@
 -record(alias, {key, alias, entry, dp}).
 -record(st, {}).
 
+-type re_mp() :: tuple().
+%% The `mp()' type is not actually exported from the `re' module.
+%% It's a tuple of undefined length whose first element is the atom `re_pattern'.
+%% Refer to http://erlang.org/doc/man/re.html#type-mp
+
 -type alias()    :: atom() | binary().
 -type name()     :: exometer:name().
 -type dp()       :: exometer:datapoint().
--type regexp()   :: iodata() | re:mp().
+-type regexp()   :: iodata() | re_mp().
 -type acc()      :: any().
 -type fold_fun() :: fun((alias(), name(), dp(), acc()) -> acc()).
 -type reason()   :: any().

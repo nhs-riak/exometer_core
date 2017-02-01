@@ -37,10 +37,12 @@ doc: edown_deps
 $(EXOMETER_PLT):
 	rebar get-deps compile
 	ERL_LIBS=deps dialyzer --build_plt --output_plt $(EXOMETER_PLT) \
-	--apps $(DIALYZER_APPS)
+	--apps $(DIALYZER_APPS) | \
+	fgrep -v -f ./dialyzer.ignore-warnings
 
 clean_plt:
 	rm -f $(EXOMETER_PLT)
 
 dialyzer: deps compile $(EXOMETER_PLT)
-	dialyzer -r ebin --plt $(EXOMETER_PLT) $(DIALYZER_OPTS)
+	dialyzer -r ebin --plt $(EXOMETER_PLT) $(DIALYZER_OPTS) | \
+	fgrep -v -f ./dialyzer.ignore-warnings

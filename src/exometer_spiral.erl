@@ -13,16 +13,16 @@
 
 %% exometer_entry callbacks
 -export([behaviour/0,
-	 probe_init/3,
-	 probe_terminate/1,
-	 probe_setopts/3,
-	 probe_update/2,
-	 probe_get_value/2,
-	 probe_get_datapoints/1,
-	 probe_reset/1,
-	 probe_code_change/3,
-	 probe_sample/1,
-	 probe_handle_msg/2]).
+         probe_init/3,
+         probe_terminate/1,
+         probe_setopts/3,
+         probe_update/2,
+         probe_get_value/2,
+         probe_get_datapoints/1,
+         probe_reset/1,
+         probe_code_change/3,
+         probe_sample/1,
+         probe_handle_msg/2]).
 
 %% exometer_proc callback
 -export([count_sample/3,
@@ -60,11 +60,10 @@ probe_init(Name, _Type, Options) ->
                                     fun count_sample/3,
                                     fun count_transform/2,
                                     Options),
-    process_flag(min_heap_size, 40000),
     {ok, St#st{slide = Slide}}.
 
 probe_terminate(_St) ->
-   ok.
+    ok.
 
 probe_get_value(DataPoints, St) ->
     {ok, [get_single_value(St, DataPoint) || DataPoint <- DataPoints]}.
@@ -77,8 +76,8 @@ probe_setopts(_Entry, _Options, _St)  ->
 
 probe_update(Increment, #st{slide = Slide, total = Total} = St) ->
     {ok, St#st{
-	   slide = exometer_slot_slide:add_element(Increment, Slide),
-	   total = Total + Increment}}.
+           slide = exometer_slot_slide:add_element(Increment, Slide),
+           total = Total + Increment}}.
 
 probe_reset(#st{slide = Slide} = St) ->
     {ok, St#st{total = 0, slide = exometer_slot_slide:reset(Slide)}}.
@@ -104,14 +103,14 @@ process_opts(St, Options) ->
           %% Unknown option, pass on to State options list, replacing
           %% any earlier versions of the same option.
           ({Opt, Val}, St1) ->
-              St1#st{opts = [{Opt, Val}
-                             | lists:keydelete(Opt, 1, St1#st.opts)]}
-      end, St, Options).
+                       St1#st{opts = [{Opt, Val}
+                                      | lists:keydelete(Opt, 1, St1#st.opts)]}
+               end, St, Options).
 
 %% Simple sample processor that maintains a counter.
 %% of all
 count_sample(_TS, Increment, undefined) ->
-   Increment;
+    Increment;
 count_sample(_TS, Increment, Total) ->
     Total + Increment.
 
@@ -130,6 +129,6 @@ get_single_value(St, count) ->
 
 get_single_value(St, one) ->
     {one, exometer_slot_slide:foldl(fun({_TS, Val}, Acc) -> Acc + Val end,
-                                           0, St#st.slide) };
+                                    0, St#st.slide) };
 get_single_value(_St, Unsupported) ->
     {Unsupported, {error, unsupported}}.

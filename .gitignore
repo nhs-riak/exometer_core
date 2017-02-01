@@ -32,6 +32,5 @@ tmp/
 # Erlang build/test artifacts
 *.app
 *.beam
-/doc/
 /ebin/
 log/

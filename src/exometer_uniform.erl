@@ -1,10 +1,10 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
+%% Copyright (c) 2014-2017 Basho Technologies, Inc.
 %%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 %% -------------------------------------------------------------------
 
@@ -52,12 +52,6 @@ behaviour() ->
 probe_init(Name, _Type, Options) ->
     St = process_opts(#st { name = Name }, [ {percentiles, [ 50, 75, 90, 95, 99, 999 ]} ] ++ Options),
     EtsRef = ets:new(uniform, [ set, { keypos, 2 } ]),
-
-    %% Setup random seed, if not already done.
-    case get(random_seed) of
-        undefined -> random:seed(os:timestamp());
-        _ -> true
-    end,
     {ok, St#st{ ets_ref = EtsRef }}.
 
 
@@ -99,7 +93,7 @@ probe_update(Value, St) when St#st.cur_sz < St#st.size ->
     { ok, St#st { cur_sz = NewSz} };
 
 probe_update(Value, St) ->
-    Slot = random:uniform(St#st.size),
+    Slot = exometer_util:rand_uniform(St#st.size),
     ets:insert(St#st.ets_ref, #elem { slot = Slot, val = Value }),
     ok.
 

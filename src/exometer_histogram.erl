@@ -1,10 +1,10 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
+%% Copyright (c) 2014-2017 Basho Technologies, Inc.
 %%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 %% -------------------------------------------------------------------
 
@@ -514,6 +514,6 @@ dupl(N,V) ->
     lists:duplicate(N, V).
 
 shuffle(List) ->
-    random:seed(random:seed0()),
-    Randomized = lists:keysort(1, [{random:uniform(), Item} || Item <- List]),
+    RandMod = exometer_util:rand_module(),
+    Randomized = lists:keysort(1, [{RandMod:uniform(), Item} || Item <- List]),
     [Value || {_, Value} <- Randomized].

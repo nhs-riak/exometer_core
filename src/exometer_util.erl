@@ -1,42 +1,46 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
+%% Copyright (c) 2014-2017 Basho Technologies, Inc.
 %%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 %% -------------------------------------------------------------------
+
 %% @doc Exometer utility functions.
 %% @end
 -module(exometer_util).
 
--export(
-   [
-    timestamp/0,
-    timestamp_to_datetime/1,
+-export([
+    clear_event_flag/2,
+    drop_duplicates/1,
+    ensure_all_started/1,
+    get_datapoints/1,
+    get_env/2,
     get_opt/2,
     get_opt/3,
-    get_env/2,
-    tables/0,
-    table/0,
     get_statistics/3,
     get_statistics2/4,
-    pick_items/2,
-    perc/2,
+    get_status/1,
     histogram/1,
     histogram/2,
-    drop_duplicates/1,
+    perc/2,
+    pick_items/2,
+    rand_module/0,
+    rand_uniform/0,
+    rand_uniform/1,
     report_type/3,
-    get_datapoints/1,
-    set_call_count/2, set_call_count/3,
-    get_status/1,
-    set_status/2,
+    set_call_count/2,
+    set_call_count/3,
     set_event_flag/2,
-    clear_event_flag/2,
+    set_status/2,
+    table/0,
+    tables/0,
     test_event_flag/2,
-    ensure_all_started/1
-   ]).
+    timestamp/0,
+    timestamp_to_datetime/1
+]).
 
 -export_type([timestamp/0]).
 
@@ -383,6 +387,40 @@ ensure_all_started(App, Apps0) ->
             {ok, Apps} = ensure_all_started(BaseApp, Apps0),
             ensure_all_started(App, [BaseApp|Apps])
     end.
+
+%% @doc Equivalent to rand/random uniform/0, always seeded.
+rand_uniform() ->
+    Mod = rand_module(),
+    Mod:uniform().
+
+%% @doc Equivalent to rand/random uniform/1, always seeded.
+rand_uniform(N) ->
+    Mod = rand_module(),
+    Mod:uniform(N).
+
+rand_module() ->
+    Key = {?MODULE, rand_mod},
+    case erlang:get(Key) of
+        undefined ->
+            Mod = case code:which(rand) of
+                non_existing ->
+                    M = random,
+                    case erlang:get(random_seed) of
+                        undefined ->
+                            _ = M:seed(os:timestamp()),
+                            M;
+                        _ ->
+                            M
+                    end;
+                _ ->
+                    rand
+            end,
+            _ = erlang:put(Key, Mod),
+            Mod;
+        Val ->
+            Val
+    end.
+
 
 
 %% EUnit tests

@@ -1,10 +1,10 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
+%% Copyright (c) 2014-2017 Basho Technologies, Inc.
 %%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 %% -------------------------------------------------------------------
 
@@ -129,7 +129,6 @@ ensure_table() ->
     end.
 
 restart_timers(TTL) ->
-    random:seed(),
     restart_timers(
       ets:select(
         ?TABLE, [{#cache{name = '$1', ttl = '$2', time = '$3', _='_'},

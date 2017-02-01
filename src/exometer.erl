@@ -1,13 +1,12 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
+%% Copyright (c) 2014-2017 Basho Technologies, Inc.
 %%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 %% -------------------------------------------------------------------
-
 
 %% @doc API and behaviour for metrics instances
 %%
@@ -71,6 +70,9 @@
               entry/0, datapoint/0]).
 
 -compile(inline).
+
+% Because of exometer_global:status/0.
+-dialyzer({no_match, [reset/1, update/2]}).
 
 -include("exometer.hrl").
 -include("log.hrl").

@@ -9,7 +9,8 @@
 %% -------------------------------------------------------------------
 %% @doc Accessor function for exometer data structures
 %%
-%% This module uses the exprecs transform (see <a href="https://github.com/uwiger/parse_trans/tree/master/doc/exprecs.md">exprecs</a>)
+%% This module uses the exprecs transform (see
+%% <a href="https://github.com/basho/parse_trans/tree/master/doc/exprecs.md">exprecs</a>)
 %% to generate accessor functions for exometer data structures.
 %%
 %% Note that the `value' attribute in `exometer_entry{}' records may not

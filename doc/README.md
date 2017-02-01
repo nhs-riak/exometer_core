@@ -2,13 +2,11 @@
 
 # Exometer Core - Erlang instrumentation package, core services #
 
-Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
+Copyright (c) 2014-2017 Basho Technologies, Inc.
 
-__Version:__ Apr 17 2015 14:08:02
+__Version:__ Basho Rebar3
 
 __Authors:__ Ulf Wiger ([`ulf.wiger@feuerlabs.com`](mailto:ulf.wiger@feuerlabs.com)), Magnus Feuer ([`magnus.feuer@feuerlabs.com`](mailto:magnus.feuer@feuerlabs.com)).
-
-[![Build Status](https://travis-ci.org/Feuerlabs/exometer_core.png?branch=master)](https://travis-ci.org/Feuerlabs/exometer_core)
 
 The Exometer Core package allows for easy and efficient instrumentation of
 Erlang code, allowing crucial data on system performance to be
@@ -28,7 +26,6 @@ optional packages, both users and developers.
 
 
 ### <a name="Table_of_Content">Table of Content</a> ###
-
 
 1. [Concept and definitions](#Concept_and_definitions)
     1. [Metric](#Metric)
@@ -202,13 +199,11 @@ Subscriptions can either be setup at runtime, through
 
 ### <a name="Built-in_entries_and_probes">Built-in entries and probes</a> ###
 
-
 There are a number of built-in entries and probes shipped
 with the Exometer Core package, as described below:
 
 
 #### <a name="counter_(exometer_native)">counter (exometer native)</a> ####
-
 
 The counter is implemented directly in `exometer` to provide simple
 counters.  A call to `exometer:update()` will add the provided value
@@ -450,7 +445,6 @@ exometer_report:subscribe(Recipient, Metric, DataPoint, Inteval)
 
 #### <a name="Set_metric_options">Set metric options</a> ####
 
-
 Each created metric can have options setup for it through the following call:
 
 ```erlang
@@ -580,7 +574,6 @@ called during upgrade, as it will re-apply the settings each time.
 
 #### <a name="Configuring_static_subscriptions">Configuring static subscriptions</a> ####
 
-
 Static subscriptions, which are automatically setup at exometer
 startup without having to invoke `exometer_report:subscribe()`, are
 configured through the report sub section under exometer.
@@ -681,7 +674,6 @@ This will activate a subscription on `[a,1]` and `[a,2]` in the
 
 #### <a name="Configuring_reporter_plugins">Configuring reporter plugins</a> ####
 
-
 The various reporter plugins to be loaded by exometer are configured
 in the `report` section under `reporters`
 
@@ -693,31 +685,18 @@ exometer.
 
 ### <a name="Creating_custom_exometer_entries">Creating custom exometer entries</a> ###
 
-
 Please see @see exometer_entry documentation for details.
 
 
 ### <a name="Creating_custom_probes">Creating custom probes</a> ###
-
 
 Please see @see exometer_probe documentation for details.
 
 
 ### <a name="Creating_custom_reporter_plugins">Creating custom reporter plugins</a> ###
 
-
 Please see @see exometer_report documentation for details.
 
-
-#### <a name="Customizing_rebar.config">Customizing rebar.config</a> ####
-
-The OS environment variables `EXOMETER_CORE_CONFIG_PREPROCESS` and
-`EXOMETER_CORE_CONFIG_POSTPROCESS` can be used to insert a script, similar to
-`rebar.config.script` in the processing flow of the exometer build.
-As the names imply, the script given by `EXOMETER_CONFIG_CONFIG_PREPROCESS`
-(if any) will be run before exometer does any processing of its own, and the
-`EXOMETER_CORE_CONFIG_POSTPROCESS` script (if any) will be run after all other
-processing is complete.
 
 ## Modules ##
 

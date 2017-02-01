@@ -5,22 +5,18 @@
 * [Function Index](#index)
 * [Function Details](#functions)
 
-
 Exometer reporter for lager backend.
+
 __Behaviours:__ [`exometer_report`](exometer_report.md).
+
 <a name="description"></a>
 
 ## Description ##
 
-
-
 This reporter emits messages to the lager logging backend,
 at a reporting level chosen by the user (default: `notice`).
 
-
-
 To change the reporting level, pass on the option `{level, Level}`.
-
 
 Example:
 
@@ -68,13 +64,11 @@ Example:
 
 `exometer_call(Unknown, From, St) -> any()`
 
-
 <a name="exometer_cast-2"></a>
 
 ### exometer_cast/2 ###
 
 `exometer_cast(Unknown, St) -> any()`
-
 
 <a name="exometer_info-2"></a>
 
@@ -82,13 +76,11 @@ Example:
 
 `exometer_info(Unknown, St) -> any()`
 
-
 <a name="exometer_init-1"></a>
 
 ### exometer_init/1 ###
 
 `exometer_init(Opts) -> any()`
-
 
 <a name="exometer_newentry-2"></a>
 
@@ -96,13 +88,11 @@ Example:
 
 `exometer_newentry(Entry, St) -> any()`
 
-
 <a name="exometer_report-5"></a>
 
 ### exometer_report/5 ###
 
 `exometer_report(Metric, DataPoint, Extra, Value, St) -> any()`
-
 
 <a name="exometer_setopts-4"></a>
 
@@ -110,13 +100,11 @@ Example:
 
 `exometer_setopts(Metric, Options, Status, St) -> any()`
 
-
 <a name="exometer_subscribe-5"></a>
 
 ### exometer_subscribe/5 ###
 
 `exometer_subscribe(Metric, DataPoint, Extra, Interval, St) -> any()`
-
 
 <a name="exometer_terminate-2"></a>
 
@@ -124,11 +112,9 @@ Example:
 
 `exometer_terminate(X1, X2) -> any()`
 
-
 <a name="exometer_unsubscribe-4"></a>
 
 ### exometer_unsubscribe/4 ###
 
 `exometer_unsubscribe(Metric, DataPoint, Extra, St) -> any()`
-
 

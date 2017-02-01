@@ -1,21 +1,33 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2015 Basho Technologies, Inc.  All Rights Reserved.
+%% Copyright (c) 2015-2017 Basho Technologies, Inc.
 %%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 %% -------------------------------------------------------------------
--module(exometer_report_SUITE).
 
-%% common_test exports
--export(
-   [
-    all/0, groups/0, suite/0,
-    init_per_suite/1, end_per_suite/1,
-    init_per_testcase/2, end_per_testcase/2
-   ]).
+-module(exometer_report_SUITE).
+-behaviour(exometer_report_logger).
+
+%% common_test callbacks
+-export([
+    all/0,
+    end_per_suite/1,
+    end_per_testcase/2,
+    groups/0,
+    init_per_suite/1,
+    init_per_testcase/2,
+    suite/0
+]).
+
+%% exometer_report_logger callbacks
+-export([
+    logger_init_input/1,
+    logger_init_output/1,
+    logger_handle_data/2
+]).
 
 %% test case exports
 -export(
@@ -27,10 +39,6 @@
     test_logger_flow_control/1,
     test_logger_flow_control_2/1
    ]).
-
--behaviour(exometer_report_logger).
--export([logger_init_output/1,
-         logger_handle_data/2]).
 
 -import(exometer_test_util, [majority/2]).
 
@@ -84,7 +92,7 @@ stop_started_apps(Config) ->
 test_newentry(Config) ->
     majority(fun test_newentry_/1, Config).
 
-test_newentry_({cleanup, Config}) ->
+test_newentry_({cleanup, _Config}) ->
     restart_exometer_core();
 test_newentry_(Config) ->
     {ok, Info} = start_logger_and_reporter(test_udp, Config),
@@ -231,6 +239,8 @@ tree_opt([H|T], L) when is_list(L) ->
 tree_opt([], _) ->
     undefined.
 
+logger_init_input(_) ->
+    {error, not_implemented}.
 
 logger_init_output(Pid) ->
     {ok, Pid}.

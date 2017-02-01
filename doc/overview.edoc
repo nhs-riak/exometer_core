@@ -1,12 +1,10 @@
 @author Ulf Wiger <ulf.wiger@feuerlabs.com>
 @author Magnus Feuer <magnus.feuer@feuerlabs.com>
-@copyright 2014 Basho Technologies, Inc.  All Rights Reserved.
-@version {@version}
+@copyright 2014-2017 Basho Technologies, Inc.
+@version Basho Rebar3
 @title Exometer Core - Erlang instrumentation package, core services
 
 @doc
-
-[![Build Status](https://travis-ci.org/Feuerlabs/exometer_core.png?branch=master)](https://travis-ci.org/Feuerlabs/exometer_core)
 
 The Exometer Core package allows for easy and efficient instrumentation of
 Erlang code, allowing crucial data on system performance to be
@@ -639,14 +637,3 @@ Please see @see exometer_probe documentation for details.
 
 == Creating custom reporter plugins ==
 Please see @see exometer_report documentation for details.
-
-=== Customizing rebar.config ===
-
-The OS environment variables `EXOMETER_CORE_CONFIG_PREPROCESS' and
-`EXOMETER_CORE_CONFIG_POSTPROCESS' can be used to insert a script, similar to
-`rebar.config.script' in the processing flow of the exometer build.
-
-As the names imply, the script given by `EXOMETER_CONFIG_CONFIG_PREPROCESS'
-(if any) will be run before exometer does any processing of its own, and the
-`EXOMETER_CORE_CONFIG_POSTPROCESS' script (if any) will be run after all other
-processing is complete.

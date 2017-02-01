@@ -1,24 +1,22 @@
-%% -*- erlang -*-
-{application, exometer_core,
- [
-  {description, "Code instrumentation and metrics collection package."},
-  {vsn, git},
-  {registered, []},
-  {applications,
-   [
-    kernel,
-    stdlib,
-    lager,
-    setup,
-    folsom
-   ]},
-  {included_applications,
-   [
-   ]},
-  {mod, {exometer_core_app, []}},
-  {start_phases, [{start_reporters, []},
-                  {preset_defaults, []}]},
-  {env,
-   [
-   ]}
- ]}.
+%% -*- mode: erlang; erlang-indent-level: 4; indent-tabs-mode: nil -*-
+%% -------------------------------------------------------------------
+%%
+%% Copyright (c) 2015-2017 Basho Technologies, Inc.
+%%
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%%
+%% -------------------------------------------------------------------
+{application, exometer_core, [
+    {description,   "Code instrumentation and metrics collection package."},
+    {vsn,           "git"},
+    {registered,    []},
+    {applications,  [kernel, stdlib, lager, setup, folsom]},
+    {mod,           {exometer_core_app, []}},
+    {start_phases, [
+        {start_reporters, []},
+        {preset_defaults, []}
+    ]},
+    {env, []}
+]}.

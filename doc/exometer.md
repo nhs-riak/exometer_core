@@ -133,7 +133,7 @@ status() = enabled | disabled
 
 
 <pre><code>
-type() = atom()
+type() = atom() | {function, M::atom(), F::atom()} | {function, M::atom(), F::atom(), ArgSpec::list(), Type::atom(), DataPoints::list()} | {Type::atom(), Arg::any()}
 </code></pre>
 
 

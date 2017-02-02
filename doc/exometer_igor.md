@@ -20,5 +20,8 @@
 
 ### parse_transform/2 ###
 
-`parse_transform(Forms, Opts) -> any()`
+<pre><code>
+parse_transform(Forms::<a href="erl_syntax.md#type-forms">erl_syntax:forms()</a>, Opts::list()) -&gt; [<a href="erl_syntax.md#type-syntaxTree">erl_syntax:syntaxTree()</a>]
+</code></pre>
+<br />
 

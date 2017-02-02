@@ -1,10 +1,10 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
+%% Copyright (c) 2014-2017 Basho Technologies, Inc.
 %%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 %% -------------------------------------------------------------------
 
@@ -183,6 +183,12 @@
 
 -export_type([metric/0, datapoint/0, interval/0, extra/0]).
 
+% Starting with OTP-19 dialyzer believes these won't return, perhaps because
+% they resolve to a gen_server:call/2, which can raise an error. The call/1
+% function doesn't produce the warning, and it's not entirely clear whether
+% the warning is only issued for exported functions.
+-dialyzer({no_return, [unsubscribe/3, unsubscribe/4]}).
+
 -include("exometer.hrl").
 -include("log.hrl").
 
@@ -274,21 +280,27 @@
           t_ref     :: reference() | undefined
          }).
 
+% name module status opts intervals
+
 -record(reporter, {
-          name      :: atom()                | '_',
-          pid       :: pid()                 | atom(), % in select()
-          mref      :: reference()           | '_',
-          module    :: module()              | '_',
-          opts = [] :: [{atom(), any()}]     | '_',
-          intervals = [] :: [#interval{}]    | '_',
+          name = '_'        :: atom() | '_',
+          pid = undefined   :: pid() | atom(),  % in select()
+          mref = '_'        :: reference() | '_',
+          module            :: module() | '_',
+          opts = []         :: [{atom(), any()}] | '_',
+          intervals = []    :: [#interval{}] | '_',
           restart = #restart{} :: #restart{} | '_',
-          status = enabled :: enabled | disabled | '_'
+          status = enabled  :: enabled | disabled | '_'
          }).
 
 -record(st, {
           subscribers = [] :: [#subscriber{}],
           reporters = []   :: [#reporter{}]
          }).
+
+% Dialyzer (rightly?) recognizes that unsubscribe_/4 doesn't handle all
+% possible results from ETS, but it handles all of the ones we care about.
+-dialyzer({no_return, unsubscribe_/4}).
 
 %%%===================================================================
 %%% API
@@ -636,7 +648,7 @@ do_start_reporters(S) ->
     %% supervisor children.
     case lists:keyfind(reporters, 1, Opts) of
         {reporters, ReporterList} ->
-            ReporterRecs = make_reporter_recs(ReporterList),
+            ReporterRecs = [make_reporter_rec(R) || R <- ReporterList],
             assert_no_duplicates(ReporterRecs),
             lists:foreach(
               fun(#reporter{name = Reporter,
@@ -668,14 +680,14 @@ do_start_reporters(S) ->
     end,
     S#st{}.
 
-make_reporter_recs([{R, Opts}|T]) when is_atom(R), is_list(Opts) ->
-    [#reporter{name = R,
-               module = get_module(R, Opts),
-               status = proplists:get_value(status, Opts, enabled),
-               opts = Opts,
-               intervals = get_interval_opts(Opts)}|make_reporter_recs(T)];
-make_reporter_recs([]) ->
-    [].
+-spec make_reporter_rec({atom(), list()}) -> #reporter{}.
+make_reporter_rec({R, Opts}) when is_atom(R), is_list(Opts) ->
+    #reporter{
+        name = R,
+        module = get_module(R, Opts),
+        status = proplists:get_value(status, Opts, enabled),
+        opts = Opts,
+        intervals = get_interval_opts(Opts)}.
 
 get_module(R, Opts) ->
     proplists:get_value(module, Opts, R).
@@ -685,17 +697,17 @@ get_interval_opts(Opts) ->
     Is1 = [singelton_interval(I) || {interval, I} <- Opts],
     Is = proplists:get_value(intervals, Opts, []),
     lists:map(
-      fun({Name, Time}) when is_atom(Name),
-                             is_integer(Time), Time >= 0 ->
-              #interval{name = Name, time = Time};
-         ({Name, Time, Delay}) when is_atom(Name),
-                                    is_integer(Time), Time >= 0,
-                                    is_integer(Delay), Delay >= 0 ->
-              #interval{name = Name, time = Time, delay = Delay};
-         ({Name, manual}) when is_atom(Name) ->
+     fun({Name, Time})
+                when is_atom(Name), is_integer(Time), Time >= 0 ->
+            #interval{name = Name, time = Time};
+        ({Name, Time, Delay})
+                when is_atom(Name), is_integer(Time), Time >= 0,
+                    is_integer(Delay), Delay >= 0 ->
+            #interval{name = Name, time = Time, delay = Delay};
+        ({Name, manual}) when is_atom(Name) ->
               #interval{name = Name, time = manual};
-         (Other) ->
-              error({invalid_interval, Other})
+        (Other) ->
+            error({invalid_interval, Other})
       end, Is ++ Is1).
 
 singelton_interval({N,T}=I) when is_atom(N), is_integer(T) -> I;
@@ -873,7 +885,7 @@ handle_call({add_reporter, Reporter, Opts}, _, #st{} = St) ->
             {reply, {error, already_running}, St};
         false ->
             try
-                [R] = make_reporter_recs([{Reporter, Opts}]),
+                R = make_reporter_rec({Reporter, Opts}),
                 {Pid, MRef} = spawn_reporter(Reporter, Opts),
                 Ints = start_interval_timers(R),
                 R1 = R#reporter{intervals = Ints,

@@ -62,12 +62,12 @@
 %% cancel the creation of the custom reporting plugin.
 %%
 %%
-%% === exometer_subscribe/4 ===
+%% === exometer_subscribe/5 ===
 %%
 %% The `exometer_subscribe()' function is invoked as follows:
 %%
 %% <pre lang="erlang">
-%%      exometer_subscribe(Metric, DataPoint, Interval State)</pre>
+%%      exometer_subscribe(Metric, DataPoint, Interval, Extra, State)</pre>
 %%
 %% The custom plugin can use this notification to modify and return its
 %% state in order to prepare for future calls to `exometer_report()' with
@@ -82,6 +82,9 @@
 %% + `Interval'<br/>Specifies the interval, in milliseconds, that the
 %% subscribed-to value will be reported at, or an atom, referring to a named
 %% interval configured in the reporter.
+%%
+%% + `Extra'<br/>Specifies the extra data, which can be anything the reporter
+%% can understand.
 %%
 %% + `State'<br/>Contains the state returned by the last called plugin function.
 %%
@@ -110,18 +113,18 @@
 %%
 %% + `State'<br/>Contains the state returned by the last called plugin function.
 %%
-%% The `exomoeter_report()' function should return `{ok, State}' where
+%% The `exometer_report()' function should return `{ok, State}' where
 %% State is a tuple that will be provided as a reference argument to
 %% future calls made into the plugin. Any other return formats will
 %% generate an error log message by exometer.
 %%
 %%
-%% === exometer_unsubscribe/3 ===
+%% === exometer_unsubscribe/4 ===
 %%
 %% The `exometer_unsubscribe()' function is invoked as follows:
 %%
 %% <pre lang="erlang">
-%%      exometer_unsubscribe(Metric, DataPoint, State)</pre>
+%%      exometer_unsubscribe(Metric, DataPoint, Extra, State)</pre>
 %%
 %% The custom plugin can use this notification to modify and return its
 %% state in order to free resources used to maintain the now de-activated
@@ -134,12 +137,34 @@
 %% + `DataPoint'<br/>Specifies the data point or data points within the
 %%  subscribed-to metric as an atom or a list of atoms.
 %%
+%% + `Extra'<br/>Specifies the extra data, which can be anything the reporter
+%% can understand.
+%%
 %% + `State'<br/>Contains the state returned by the last called plugin function.
 %%
 %% The `exometer_unsubscribe()' function should return `{ok, State}' where
 %% State is a tuple that will be provided as a reference argument to
 %% future calls made into the plugin. Any other return formats will
 %% generate an error log message by exometer.
+%%
+%% === exometer_report_bulk/3 (Optional) ===
+%%
+%% If the option `{report_bulk, true}' has been given when starting the
+%% reporter, <em>and</em> this function is exported, it will be called as:
+%%
+%% <pre lang="erlang">
+%%      exometer_report_bulk(Found, Extra, State)
+%% </pre>
+%%
+%% where `Found' has the format `[{Metric, [{DataPoint, Value}|_]}|_]'
+%%
+%% That is, e.g. when a `select' pattern is used, all found values are passed
+%% to the reporter in one message. If bulk reporting is not enabled, each
+%% datapoint/value pair will be passed separately to the
+%% <a href="#exometer_report/4"><code>exometer_report/4</code></a> function. If `report_bulk' was enabled, the
+%% reporter callback will get all values at once. Note that this happens
+%% also for single values, which are then passed as a list of one metric,
+%% with a list of one datapoint/value pair.
 %%
 %% @end
 -module(exometer_report).
@@ -188,6 +213,10 @@
 % function doesn't produce the warning, and it's not entirely clear whether
 % the warning is only issued for exported functions.
 -dialyzer({no_return, [unsubscribe/3, unsubscribe/4]}).
+
+% Dialyzer (rightly?) recognizes that unsubscribe_/4 doesn't handle all
+% possible results from ETS, but it handles all of the ones we care about.
+-dialyzer({no_return, unsubscribe_/4}).
 
 -include("exometer.hrl").
 -include("log.hrl").
@@ -298,9 +327,7 @@
           reporters = []   :: [#reporter{}]
          }).
 
-% Dialyzer (rightly?) recognizes that unsubscribe_/4 doesn't handle all
-% possible results from ETS, but it handles all of the ones we care about.
--dialyzer({no_return, unsubscribe_/4}).
+-record(rst, {st, bulk = false}).
 
 %%%===================================================================
 %%% API
@@ -447,6 +474,11 @@ list_subscriptions(Reporter) ->
 %% at the same time, the delay parameter can be used to achieve staggered
 %% reporting. If the interval is specified as ```'manual'''', it will have
 %% to be triggered manually using {@link trigger_interval/2}.
+%%
+%% `{report_bulk, true | false}'
+%% Pass all found datapoint/value pairs for a given subscription at once to
+%% the `exometer_report_bulk/3' function, if it is exported, otherwise use
+%% `exometer_report/4' as usual.
 %%
 %% @end
 add_reporter(Reporter, Options) ->
@@ -1482,21 +1514,11 @@ unsubscribe_(#subscriber{key = #key{reporter = Reporter,
 
 
 report_values(Found, #key{reporter = Reporter, extra = Extra} = Key) ->
-    try
-        [[report_value(Reporter, Name, DP, Extra, Val)
-          || {DP, Val} <- Values] || {Name, Values} <- Found]
+    try Reporter ! {exometer_report, Found, Extra}
     catch
         error:Reason ->
             lager:error("ERROR ~p~nKey = ~p~nTrace: ~p",
                         [Reason, Key, erlang:get_stacktrace()])
-    end.
-
-report_value(Reporter, Metric, DataPoint, Extra, Val) ->
-    try Reporter ! {exometer_report, Metric, DataPoint, Extra, Val},
-         true
-    catch
-        error:_ -> false;
-        exit:_ -> false
     end.
 
 retrieve_metric({Metric, Type, Enabled}, Acc) ->
@@ -1577,28 +1599,27 @@ purge_subscriptions(R) ->
 %% Module is expected to implement exometer_report behavior
 reporter_init(Reporter, Opts) ->
     Module = proplists:get_value(module, Opts, Reporter),
+    Bulk = proplists:get_value(report_bulk, Opts, false),
     case Module:exometer_init(Opts) of
         {ok, St} ->
-            {ok, Module, St};
+            {ok, Module, #rst{st = St, bulk = Bulk}};
         {error, Reason} ->
             ?error("Failed to start reporter ~p: ~p~n", [Module, Reason]),
             exit(Reason)
     end.
 
-reporter_loop(Module, St) ->
+reporter_loop(Module, #rst{st = St, bulk = Bulk} = RSt) ->
     NSt = receive
-              {exometer_report, Metric, DataPoint, Extra, Value } ->
-                  case Module:exometer_report(Metric, DataPoint, Extra, Value, St) of
-                      {ok, St1} -> {ok, St1};
-                      _ -> {ok, St}
-                  end;
+              {exometer_report, Found, Extra} ->
+                  {ok, r_exometer_report(
+                         Bulk, Module, Found, Extra, St)};
               {exometer_unsubscribe, Metric, DataPoint, Extra } ->
                   case Module:exometer_unsubscribe(Metric, DataPoint, Extra, St) of
                       {ok, St1} -> {ok, St1};
                       _ -> {ok, St}
                   end;
-              {exometer_subscribe, Metric, DataPoint, Extra, Interval } ->
-                  case Module:exometer_subscribe(Metric, DataPoint, Extra, Interval, St) of
+              {exometer_subscribe, Metric, DataPoint, Interval, Extra } ->
+                  case Module:exometer_subscribe(Metric, DataPoint, Interval, Extra, St) of
                       {ok, St1} -> {ok, St1};
                       _ -> {ok, St}
                   end;
@@ -1642,9 +1663,34 @@ reporter_loop(Module, St) ->
           end,
     case NSt of
         {ok, St2} ->
-            reporter_loop(Module, St2);
+            reporter_loop(Module, RSt#rst{st = St2});
         _ ->
             ok
+    end.
+
+r_exometer_report(false, Module, Found, Extra, St) ->
+    lists:foldl(
+      fun({Name, Values}, Acc) ->
+              lists:foldl(
+                fun({DP, Val}, Acc1) ->
+                        case Module:exometer_report(
+                               Name, DP, Extra, Val, Acc1) of
+                            {ok, St1} -> St1;
+                            _ -> St
+                        end
+                end, Acc, Values)
+      end, St, Found);
+r_exometer_report(true, Module, Found, Extra, St) ->
+    case erlang:function_exported(Module, exometer_report_bulk, 3) of
+        true ->
+            case Module:exometer_report_bulk(Found, Extra, St) of
+                {ok, St1} ->
+                    St1;
+                _ ->
+                    St
+            end;
+        false ->
+            r_exometer_report(false, Module, Found, Extra, St)
     end.
 
 call(Req) ->

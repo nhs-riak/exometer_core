@@ -70,13 +70,13 @@ future calls made into the plugin. Any other return formats will
 cancel the creation of the custom reporting plugin.
 
 
-#### <a name="exometer_subscribe/4">exometer_subscribe/4</a> ####
+#### <a name="exometer_subscribe/5">exometer_subscribe/5</a> ####
 
 The `exometer_subscribe()` function is invoked as follows:
 
 ```erlang
 
-       exometer_subscribe(Metric, DataPoint, Interval State)
+       exometer_subscribe(Metric, DataPoint, Interval, Extra, State)
 ```
 
 The custom plugin can use this notification to modify and return its
@@ -92,6 +92,9 @@ as an atom, or a list of atoms.
 + `Interval`<br />Specifies the interval, in milliseconds, that the
 subscribed-to value will be reported at, or an atom, referring to a named
 interval configured in the reporter.
+
++ `Extra`<br />Specifies the extra data, which can be anything the reporter
+can understand.
 
 + `State`<br />Contains the state returned by the last called plugin function.
 
@@ -122,19 +125,19 @@ to be reported.
 
 + `State`<br />Contains the state returned by the last called plugin function.
 
-The `exomoeter_report()` function should return `{ok, State}` where
+The `exometer_report()` function should return `{ok, State}` where
 State is a tuple that will be provided as a reference argument to
 future calls made into the plugin. Any other return formats will
 generate an error log message by exometer.
 
 
-#### <a name="exometer_unsubscribe/3">exometer_unsubscribe/3</a> ####
+#### <a name="exometer_unsubscribe/4">exometer_unsubscribe/4</a> ####
 
 The `exometer_unsubscribe()` function is invoked as follows:
 
 ```erlang
 
-       exometer_unsubscribe(Metric, DataPoint, State)
+       exometer_unsubscribe(Metric, DataPoint, Extra, State)
 ```
 
 The custom plugin can use this notification to modify and return its
@@ -148,12 +151,36 @@ as a list of atoms.
 + `DataPoint`<br />Specifies the data point or data points within the
 subscribed-to metric as an atom or a list of atoms.
 
++ `Extra`<br />Specifies the extra data, which can be anything the reporter
+can understand.
+
 + `State`<br />Contains the state returned by the last called plugin function.
 
 The `exometer_unsubscribe()` function should return `{ok, State}` where
 State is a tuple that will be provided as a reference argument to
 future calls made into the plugin. Any other return formats will
 generate an error log message by exometer.
+
+
+#### <a name="exometer_report_bulk/3_(Optional)">exometer_report_bulk/3 (Optional)</a> ####
+
+If the option `{report_bulk, true}` has been given when starting the
+reporter, _and_ this function is exported, it will be called as:
+
+```erlang
+
+       exometer_report_bulk(Found, Extra, State)
+```
+
+where `Found` has the format `[{Metric, [{DataPoint, Value}|_]}|_]`
+
+That is, e.g. when a `select` pattern is used, all found values are passed
+to the reporter in one message. If bulk reporting is not enabled, each
+datapoint/value pair will be passed separately to the
+[`exometer_report/4`](#exometer_report/4) function. If `report_bulk` was enabled, the
+reporter callback will get all values at once. Note that this happens
+also for single values, which are then passed as a list of one metric,
+with a list of one datapoint/value pair.
 
 <a name="types"></a>
 
@@ -322,8 +349,14 @@ reporting. If the interval is specified as
 ```
   'manual
 ```
+
 ', it will have
 to be triggered manually using [`trigger_interval/2`](#trigger_interval-2).
+
+`{report_bulk, true | false}`
+Pass all found datapoint/value pairs for a given subscription at once to
+the `exometer_report_bulk/3` function, if it is exported, otherwise use
+`exometer_report/4` as usual.
 
 <a name="call_reporter-2"></a>
 

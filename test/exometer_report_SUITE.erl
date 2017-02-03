@@ -73,10 +73,11 @@ suite() ->
     [].
 
 init_per_suite(Config) ->
+    _ = application:stop(exometer_core),
     Config.
 
 init_per_testcase(_Case, Config) ->
-    {ok, StartedApps} = exometer_test_util:ensure_all_started(exometer_core),
+    {ok, StartedApps} = application:ensure_all_started(exometer_core),
     [{started_apps, StartedApps} | Config].
 
 end_per_testcase(_Case, Config) ->
@@ -86,8 +87,8 @@ end_per_suite(_Config) ->
     ok.
 
 stop_started_apps(Config) ->
-    [application:stop(App) ||
-        App <- lists:reverse(?config(started_apps, Config))].
+    lists:foreach(fun application:stop/1,
+        lists:reverse(?config(started_apps, Config))).
 
 test_newentry(Config) ->
     majority(fun test_newentry_/1, Config).

@@ -1,21 +1,25 @@
+%% -------------------------------------------------------------------
+%%
+%% Copyright (c) 2014-2017 Basho Technologies, Inc.
+%%
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%%
+%% -------------------------------------------------------------------
+
 -module(exometer_error_SUITE).
 
-%% -------------------------------------------------------------------
-%%
-%% Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
-%%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
-%%
-%% -------------------------------------------------------------------
-%% common_test exports
--export(
-   [
-    all/0, groups/0, suite/0,
-    init_per_suite/1, end_per_suite/1,
-    init_per_testcase/2, end_per_testcase/2
-   ]).
+%% common_test callbacks
+-export([
+    all/0,
+    end_per_suite/1,
+    end_per_testcase/2,
+    groups/0,
+    init_per_suite/1,
+    init_per_testcase/2,
+    suite/0
+]).
 
 %% test case exports
 -export(
@@ -59,7 +63,7 @@ end_per_suite(_Config) ->
     ok.
 
 init_per_testcase(_Case, Config) ->
-    {ok, Started} = exometer_test_util:ensure_all_started(exometer_core),
+    {ok, Started} = application:ensure_all_started(exometer_core),
     ct:log("Started: ~p~n", [[{T, catch ets:tab2list(T)}
                               || T <- exometer_util:tables()]]),
     [{started_apps, Started}|Config].
@@ -70,14 +74,8 @@ end_per_testcase(_Case, Config) ->
     ok.
 
 stop_started_apps(Config) ->
-    [stop_app(A) || A <- lists:reverse(?config(started_apps, Config))],
-    ok.
-
-stop_app(App) ->
-    case application:stop(App) of
-        ok -> ok;
-        {error, {not_started,_}} -> ok
-    end.
+    lists:foreach(fun application:stop/1,
+        lists:reverse(?config(started_apps, Config))).
 
 %%%===================================================================
 %%% Test Cases

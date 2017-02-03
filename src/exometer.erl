@@ -98,7 +98,7 @@
 
 %% @doc Start exometer and dependent apps (for testing).
 start() ->
-    {ok,_} = exometer_util:ensure_all_started(exometer_core),
+    {ok,_} = application:ensure_all_started(exometer_core),
     ok.
 
 %% @doc Stop exometer and dependent apps (for testing).

@@ -1,21 +1,25 @@
+%% -------------------------------------------------------------------
+%%
+%% Copyright (c) 2014-2017 Basho Technologies, Inc.
+%%
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%%
+%% -------------------------------------------------------------------
+
 -module(exometer_alias_SUITE).
 
-%% -------------------------------------------------------------------
-%%
-%% Copyright (c) 2014 Basho Technologies, Inc.  All Rights Reserved.
-%%
-%%   This Source Code Form is subject to the terms of the Mozilla Public
-%%   License, v. 2.0. If a copy of the MPL was not distributed with this
-%%   file, You can obtain one at http://mozilla.org/MPL/2.0/.
-%%
-%% -------------------------------------------------------------------
-%% common_test exports
--export(
-   [
-    all/0, groups/0, suite/0,
-    init_per_suite/1, end_per_suite/1,
-    init_per_testcase/2, end_per_testcase/2
-   ]).
+%% common_test callbacks
+-export([
+    all/0,
+    end_per_suite/1,
+    end_per_testcase/2,
+    groups/0,
+    init_per_suite/1,
+    init_per_testcase/2,
+    suite/0
+]).
 
 %% test case exports
 -export(
@@ -62,18 +66,19 @@ suite() ->
     [].
 
 init_per_suite(Config) ->
+    _ = application:stop(exometer_core),
     Config.
 
 end_per_suite(_Config) ->
     ok.
 
 init_per_testcase(_Case, Config) ->
-    {ok, StartedApps} = exometer_test_util:ensure_all_started(exometer_core),
+    {ok, StartedApps} = application:ensure_all_started(exometer_core),
     [{started_apps, StartedApps} | Config].
 
 end_per_testcase(_Case, Config) ->
-    [application:stop(App) || App <- ?config(started_apps, Config)],
-    ok.
+    lists:foreach(fun application:stop/1,
+        lists:reverse(?config(started_apps, Config))).
 
 %%%===================================================================
 %%% Test Cases

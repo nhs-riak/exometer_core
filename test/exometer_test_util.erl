@@ -1,42 +1,24 @@
+%% -------------------------------------------------------------------
+%%
+%% Copyright (c) 2015-2017 Basho Technologies, Inc.
+%%
+%% This Source Code Form is subject to the terms of the Mozilla Public
+%% License, v. 2.0. If a copy of the MPL was not distributed with this
+%% file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%%
+%% -------------------------------------------------------------------
+
 -module(exometer_test_util).
 
--export([ensure_all_started/1,
-         majority/2,
-         majority/3]).
+-export([
+    app_lib_dir/0,
+    majority/2,
+    majority/3,
+    setup_test_log/0
+]).
 
 -define(MAJORITY_COUNT_ENV, "CT_MAJORITY_COUNT").
--define(DEFAULT_MAJORITY_COUNT, 5).
-
-%% This implementation is originally from Basho's Webmachine. On
-%% older versions of Erlang, we don't have
-%% application:ensure_all_started, so we use this wrapper function to
-%% either use the native implementation or our own version, depending
-%% on what's available.
--spec ensure_all_started(atom()) -> {ok, [atom()]} | {error, term()}.
-ensure_all_started(App) ->
-    case erlang:function_exported(application, ensure_all_started, 1) of
-        true ->
-            application:ensure_all_started(App);
-        false ->
-            ensure_all_started(App, [])
-    end.
-
-%% This implementation is originally from Basho's
-%% Webmachine. Reimplementation of ensure_all_started. NOTE this does
-%% not behave the same as the native version in all cases, but as a
-%% quick hack it works well enough for our purposes. Eventually I
-%% assume we'll drop support for older versions of Erlang and this can
-%% be eliminated.
-ensure_all_started(App, Apps0) ->
-    case application:start(App) of
-        ok ->
-            {ok, lists:reverse([App | Apps0])};
-        {error,{already_started,App}} ->
-            {ok, lists:reverse(Apps0)};
-        {error,{not_started,BaseApp}} ->
-            {ok, Apps} = ensure_all_started(BaseApp, Apps0),
-            ensure_all_started(App, [BaseApp|Apps])
-    end.
+-define(DEFAULT_MAJORITY_COUNT, 9).
 
 majority(F, Cfg) ->
     case os:getenv(?MAJORITY_COUNT_ENV) of
@@ -78,3 +60,35 @@ majority(N, F, Cfg, Hist) when N > 0 ->
               F({cleanup, Cfg})
           end,
     majority(N-1, F, Cfg, [Res|Hist]).
+
+%% Return the runtime app directory, differs in Rebar2 vs 3.
+app_lib_dir() ->
+    Key = {?MODULE, test_dir},
+    case erlang:get(Key) of
+        undefined ->
+            % Use this in case code:which/1 would return cover_compiled and
+            % we'd have to revert to it anyway - the code is obviously already
+            % loaded.
+            {_, _, Beam} = code:get_object_code(?MODULE),
+            Dir = filename:dirname(filename:dirname(Beam)),
+            _ = erlang:put(Key, Dir),
+            Dir;
+        Val ->
+            Val
+    end.
+
+%% Set up logging with reasonable test outputs.
+setup_test_log() ->
+    LogDir = filename:join(app_lib_dir(), "log"),
+    ConLog = filename:join(LogDir, "console.log"),
+    ErrLog = filename:join(LogDir, "error.log"),
+    CrashLog = filename:join(LogDir, "crash.log"),
+    filelib:ensure_dir(ConLog),
+    application:load(sasl),
+    application:set_env(sasl, errlog_type, error),
+    application:load(lager),
+    application:set_env(lager, crash_log, CrashLog),
+    application:set_env(lager, handlers, [
+        {lager_console_backend, warn},
+        {lager_file_backend, [{file, ErrLog}, {level, warn}]},
+        {lager_file_backend, [{file, ConLog}, {level, debug}]} ]).

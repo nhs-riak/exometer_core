@@ -568,27 +568,31 @@ regexp_prefix_(<<>>, Acc) ->
 
 alias_test_() ->
     {setup,
-     fun() ->
-             exometer:start(),
-             create_entries(),
-             load_aliases(),
-             ets:tab2list(?TAB),
-             ok
-     end,
-     fun(_) -> application:stop(exometer) end,
-     [?_test(t_resolve()),
-      ?_test(t_reverse_map()),
-      ?_test(t_get_value()),
-      ?_test(t_prefix_match()),
-      ?_test(t_prefix_match2()),
-      ?_test(t_prefix_foldl()),
-      ?_test(t_regexp_foldl()),
-      ?_test(t_regexp_foldl2()),
-      ?_test(t_regexp_foldr()),
-      ?_test(t_unload()),
-      ?_test(t_new()),
-      ?_test(t_update()),
-      ?_test(t_delete())]}.
+        fun() ->
+            exometer_test_util:setup_test_log(),
+            exometer:start(),
+            create_entries(),
+            load_aliases(),
+            ets:tab2list(?TAB),
+            ok
+        end,
+        fun(_) ->
+            application:stop(exometer)
+        end, [
+        ?_test(t_resolve()),
+        ?_test(t_reverse_map()),
+        ?_test(t_get_value()),
+        ?_test(t_prefix_match()),
+        ?_test(t_prefix_match2()),
+        ?_test(t_prefix_foldl()),
+        ?_test(t_regexp_foldl()),
+        ?_test(t_regexp_foldl2()),
+        ?_test(t_regexp_foldr()),
+        ?_test(t_unload()),
+        ?_test(t_new()),
+        ?_test(t_update()),
+        ?_test(t_delete())
+    ]}.
 
 
 t_resolve() ->

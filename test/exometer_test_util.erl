@@ -79,13 +79,19 @@ app_lib_dir() ->
 
 %% Set up logging with reasonable test outputs.
 setup_test_log() ->
-    LogDir = filename:join(app_lib_dir(), "log"),
-    ConLog = filename:join(LogDir, "console.log"),
-    ErrLog = filename:join(LogDir, "error.log"),
+    AppDir  = app_lib_dir(),
+    LogDir  = filename:join(AppDir, "run_log"),
+    DataDir = filename:join(AppDir, "run_data"),
+    ConLog  = filename:join(LogDir, "console.log"),
+    ErrLog  = filename:join(LogDir, "error.log"),
     CrashLog = filename:join(LogDir, "crash.log"),
     filelib:ensure_dir(ConLog),
+    error_logger:tty(false),
     application:load(sasl),
     application:set_env(sasl, errlog_type, error),
+    application:load(setup),
+    application:set_env(setup, log_dir, LogDir),
+    application:set_env(setup, data_dir, DataDir),
     application:load(lager),
     application:set_env(lager, crash_log, CrashLog),
     application:set_env(lager, handlers, [

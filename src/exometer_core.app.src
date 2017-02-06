@@ -11,11 +11,24 @@
 {application, exometer_core, [
     {description,   "Code instrumentation and metrics collection package."},
     {vsn,           git},
-    {registered,    []},
-    {applications,  [
-        kernel, stdlib, syntax_tools, lager, setup, folsom, parse_trans
-    ]},
     {mod,           {exometer_core_app, []}},
+    {registered, [
+        exometer_admin, exometer_alias,
+        exometer_cache,
+        exometer_core_sup,
+        exometer_folsom_monitor,
+        exometer_report,
+        exometer_report_logger_sup
+    ]},
+    {applications, [
+        kernel,
+        stdlib,
+        syntax_tools,
+        lager,
+        setup,
+        folsom,
+        parse_trans
+    ]},
     {start_phases, [
         {start_reporters, []},
         {preset_defaults, []}

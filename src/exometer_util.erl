@@ -359,16 +359,24 @@ clear_event_flag(update, disabled) -> 0.
 test_event_flag(update, St) when St band 2#10 =:= 2#10 -> true;
 test_event_flag(update, _) -> false.
 
-%% @doc Equivalent to rand/random uniform/0, always seeded.
+%% @doc Equivalent to rand/random uniform/0.
+%% The PRNG is guaranteed to be seeded, but it's not possible to tell if its
+%% current seed is derived from a constant ancestor.
 rand_uniform() ->
     Mod = rand_module(),
     Mod:uniform().
 
-%% @doc Equivalent to rand/random uniform/1, always seeded.
+%% @doc Equivalent to rand/random uniform/1.
+%% The PRNG is guaranteed to be seeded, but it's not possible to tell if its
+%% current seed is derived from a constant ancestor.
 rand_uniform(N) ->
     Mod = rand_module(),
     Mod:uniform(N).
 
+%% @doc Get the rand/random module to use for calls to uniform/0-1.
+%% It is NOT safe to call the seed-related functions, as they differ between
+%% modules, but the PRNG is guaranteed to be seeded in the process in which
+%% this function is called.
 rand_module() ->
     Key = {?MODULE, rand_mod},
     case erlang:get(Key) of
@@ -391,8 +399,6 @@ rand_module() ->
         Val ->
             Val
     end.
-
-
 
 %% EUnit tests
 -ifdef(TEST).

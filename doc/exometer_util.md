@@ -28,7 +28,7 @@ timestamp() = non_neg_integer()
 
 
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#clear_event_flag-2">clear_event_flag/2</a></td><td></td></tr><tr><td valign="top"><a href="#drop_duplicates-1">drop_duplicates/1</a></td><td>
-<code>drop_duplicates/1</code> will drop all duplicate elements from a list of tuples identified by their first element.</td></tr><tr><td valign="top"><a href="#get_datapoints-1">get_datapoints/1</a></td><td></td></tr><tr><td valign="top"><a href="#get_env-2">get_env/2</a></td><td></td></tr><tr><td valign="top"><a href="#get_opt-2">get_opt/2</a></td><td></td></tr><tr><td valign="top"><a href="#get_opt-3">get_opt/3</a></td><td></td></tr><tr><td valign="top"><a href="#get_statistics-3">get_statistics/3</a></td><td>Calculate statistics from a sorted list of values.</td></tr><tr><td valign="top"><a href="#get_statistics2-4">get_statistics2/4</a></td><td></td></tr><tr><td valign="top"><a href="#get_status-1">get_status/1</a></td><td></td></tr><tr><td valign="top"><a href="#histogram-1">histogram/1</a></td><td></td></tr><tr><td valign="top"><a href="#histogram-2">histogram/2</a></td><td></td></tr><tr><td valign="top"><a href="#perc-2">perc/2</a></td><td></td></tr><tr><td valign="top"><a href="#pick_items-2">pick_items/2</a></td><td>Pick values from specified positions in a sorted list of numbers.</td></tr><tr><td valign="top"><a href="#rand_module-0">rand_module/0</a></td><td></td></tr><tr><td valign="top"><a href="#rand_uniform-0">rand_uniform/0</a></td><td>Equivalent to rand/random uniform/0, always seeded.</td></tr><tr><td valign="top"><a href="#rand_uniform-1">rand_uniform/1</a></td><td>Equivalent to rand/random uniform/1, always seeded.</td></tr><tr><td valign="top"><a href="#report_type-3">report_type/3</a></td><td></td></tr><tr><td valign="top"><a href="#set_call_count-2">set_call_count/2</a></td><td></td></tr><tr><td valign="top"><a href="#set_call_count-3">set_call_count/3</a></td><td></td></tr><tr><td valign="top"><a href="#set_event_flag-2">set_event_flag/2</a></td><td></td></tr><tr><td valign="top"><a href="#set_status-2">set_status/2</a></td><td></td></tr><tr><td valign="top"><a href="#table-0">table/0</a></td><td></td></tr><tr><td valign="top"><a href="#tables-0">tables/0</a></td><td></td></tr><tr><td valign="top"><a href="#test_event_flag-2">test_event_flag/2</a></td><td></td></tr><tr><td valign="top"><a href="#timestamp-0">timestamp/0</a></td><td>Generate a millisecond-resolution timestamp.</td></tr><tr><td valign="top"><a href="#timestamp_to_datetime-1">timestamp_to_datetime/1</a></td><td>Convert timestamp to a regular datetime.</td></tr></table>
+<code>drop_duplicates/1</code> will drop all duplicate elements from a list of tuples identified by their first element.</td></tr><tr><td valign="top"><a href="#get_datapoints-1">get_datapoints/1</a></td><td></td></tr><tr><td valign="top"><a href="#get_env-2">get_env/2</a></td><td></td></tr><tr><td valign="top"><a href="#get_opt-2">get_opt/2</a></td><td></td></tr><tr><td valign="top"><a href="#get_opt-3">get_opt/3</a></td><td></td></tr><tr><td valign="top"><a href="#get_statistics-3">get_statistics/3</a></td><td>Calculate statistics from a sorted list of values.</td></tr><tr><td valign="top"><a href="#get_statistics2-4">get_statistics2/4</a></td><td></td></tr><tr><td valign="top"><a href="#get_status-1">get_status/1</a></td><td></td></tr><tr><td valign="top"><a href="#histogram-1">histogram/1</a></td><td></td></tr><tr><td valign="top"><a href="#histogram-2">histogram/2</a></td><td></td></tr><tr><td valign="top"><a href="#perc-2">perc/2</a></td><td></td></tr><tr><td valign="top"><a href="#pick_items-2">pick_items/2</a></td><td>Pick values from specified positions in a sorted list of numbers.</td></tr><tr><td valign="top"><a href="#rand_module-0">rand_module/0</a></td><td>Get the rand/random module to use for calls to uniform/0-1.</td></tr><tr><td valign="top"><a href="#rand_uniform-0">rand_uniform/0</a></td><td>Equivalent to rand/random uniform/0.</td></tr><tr><td valign="top"><a href="#rand_uniform-1">rand_uniform/1</a></td><td>Equivalent to rand/random uniform/1.</td></tr><tr><td valign="top"><a href="#report_type-3">report_type/3</a></td><td></td></tr><tr><td valign="top"><a href="#set_call_count-2">set_call_count/2</a></td><td></td></tr><tr><td valign="top"><a href="#set_call_count-3">set_call_count/3</a></td><td></td></tr><tr><td valign="top"><a href="#set_event_flag-2">set_event_flag/2</a></td><td></td></tr><tr><td valign="top"><a href="#set_status-2">set_status/2</a></td><td></td></tr><tr><td valign="top"><a href="#table-0">table/0</a></td><td></td></tr><tr><td valign="top"><a href="#tables-0">tables/0</a></td><td></td></tr><tr><td valign="top"><a href="#test_event_flag-2">test_event_flag/2</a></td><td></td></tr><tr><td valign="top"><a href="#timestamp-0">timestamp/0</a></td><td>Generate a millisecond-resolution timestamp.</td></tr><tr><td valign="top"><a href="#timestamp_to_datetime-1">timestamp_to_datetime/1</a></td><td>Convert timestamp to a regular datetime.</td></tr></table>
 
 
 <a name="functions"></a>
@@ -152,13 +152,20 @@ entries.
 
 `rand_module() -> any()`
 
+Get the rand/random module to use for calls to uniform/0-1.
+It is NOT safe to call the seed-related functions, as they differ between
+modules, but the PRNG is guaranteed to be seeded in the process in which
+this function is called.
+
 <a name="rand_uniform-0"></a>
 
 ### rand_uniform/0 ###
 
 `rand_uniform() -> any()`
 
-Equivalent to rand/random uniform/0, always seeded.
+Equivalent to rand/random uniform/0.
+The PRNG is guaranteed to be seeded, but it's not possible to tell if its
+current seed is derived from a constant ancestor.
 
 <a name="rand_uniform-1"></a>
 
@@ -166,7 +173,9 @@ Equivalent to rand/random uniform/0, always seeded.
 
 `rand_uniform(N) -> any()`
 
-Equivalent to rand/random uniform/1, always seeded.
+Equivalent to rand/random uniform/1.
+The PRNG is guaranteed to be seeded, but it's not possible to tell if its
+current seed is derived from a constant ancestor.
 
 <a name="report_type-3"></a>
 
